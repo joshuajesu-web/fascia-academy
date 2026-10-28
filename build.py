@@ -4,6 +4,7 @@
 Reads content/site.json, content/about.md and content/modules/*.json,
 writes a fully static site to dist/. No server, no database, free to host.
 """
+import hashlib
 import html
 import json
 import re
@@ -18,6 +19,11 @@ STATIC = ROOT / "static"
 DIST = ROOT / "dist"
 
 SITE = json.loads((CONTENT / "site.json").read_text())
+
+
+def asset_version(name):
+    """Short content hash, so browsers fetch a fresh copy whenever the file changes."""
+    return hashlib.sha1((STATIC / name).read_bytes()).hexdigest()[:10]
 
 
 def md(text):
@@ -62,7 +68,7 @@ def page(title, body, *, description="", path="", depth=0, body_class=""):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{base}static/style.css">
+<link rel="stylesheet" href="{base}static/style.css?v={asset_version('style.css')}">
 </head>
 <body class="{body_class}">
 <header class="nav">
@@ -79,7 +85,7 @@ def page(title, body, *, description="", path="", depth=0, body_class=""):
   <p><strong>{esc(SITE['name'])}</strong> is free, forever. Built by {esc(SITE['author'])}.</p>
   <p class="small">This course is education, not medical advice. If you have an injury or a medical condition, check with a qualified professional before starting a new training practice. Videos are embedded from their creators on YouTube; all credit and rights belong to them.</p>
 </footer>
-<script src="{base}static/app.js"></script>
+<script src="{base}static/app.js?v={asset_version('app.js')}"></script>
 </body>
 </html>
 """
