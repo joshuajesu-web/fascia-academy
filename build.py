@@ -185,7 +185,7 @@ def render_index(modules):
     <a class="btn" href="{start_href}">Start the course, it's free</a>
     <a class="btn ghost" href="about/index.html">Why I built this</a>
   </div>
-  <p class="stats"><span>{len(modules)} modules</span><span>{total} lessons</span><span>No sign-up</span><span>At home, no equipment</span></p>
+  <p class="stats"><span>{len(modules)} module{"s" if len(modules) != 1 else ""}</span><span>{total} lessons</span><span>No sign-up</span><span>At home, no equipment</span></p>
 </section>
 
 <section class="pillars">
@@ -197,10 +197,32 @@ def render_index(modules):
 <section id="modules" class="modules">
   <h2>The course</h2>
   <p class="overall">Your progress: <span id="overall">0</span> of {total} lessons</p>
-  <div class="grid">{cards}</div>
+  <div class="grid">{cards or '<p class="overall">The first modules are being written right now. Check back very soon.</p>'}</div>
 </section>
+
+{render_creators()}
 """
     return page(SITE["name"], body, path="index.html", depth=0, body_class="home")
+
+
+def render_creators():
+    creators = SITE.get("creators", [])
+    if not creators:
+        return ""
+    cards = "".join(
+        f"""<div class="creator">
+  <span class="eyebrow">{esc(c.get('who', ''))}</span>
+  <h3>{esc(c['name'])}</h3>
+  <p>{esc(c['about'])}</p>
+  {''.join(f'<a href="{esc(l["url"])}" target="_blank" rel="noopener">{esc(l["label"])} ↗</a>' for l in c.get('links', []))}
+</div>"""
+        for c in creators
+    )
+    return f"""<section class="creators">
+  <h2>Learn from the source</h2>
+  <p>This course stands on the work of these coaches. Follow them, watch their full videos, support what they do.</p>
+  <div class="creator-row">{cards}</div>
+</section>"""
 
 
 def render_about():
