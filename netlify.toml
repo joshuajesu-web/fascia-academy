@@ -1,0 +1,8 @@
+[build]
+  command = "pip install -r requirements.txt && python build.py"
+  publish = "dist"
+
+[[headers]]
+  for = "/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
