@@ -9,20 +9,32 @@
   "creators": [
     {
       "name": "The Secret of Athleticism",
-      "who": "Chong Xie",
-      "about": "Founder of the Hyperarch Fascia Training system. The primary source for this course's fascia theory and practice: the foot, elasticity, and how great athletes really move.",
+      "who": "Coach Chong Xie",
+      "about": "Creator of Hyperarch Fascia Training and author of Secret of Athleticism. The primary source for this course's fascia theory and practice: the foot, elasticity, and how great athletes really move.",
       "links": [
+        {
+          "label": "YouTube",
+          "url": "https://www.youtube.com/@HyperarchFasciaTraining"
+        },
         {
           "label": "Instagram",
           "url": "https://www.instagram.com/secretofathleticism/"
+        },
+        {
+          "label": "Website",
+          "url": "https://www.secret-of-athleticism.com/"
         }
       ]
     },
     {
       "name": "Nick Ball Training",
       "who": "Nick Ball",
-      "about": "Movement coach focused on GOATA-style movement: the connected, efficient patterns the greatest athletes share.",
+      "about": "Trainer and GOATA specialist focused on restoring natural, pain-free movement patterns: feet, ankles, hips and the connected way the greatest athletes move.",
       "links": [
+        {
+          "label": "YouTube",
+          "url": "https://www.youtube.com/@nickballtraining"
+        },
         {
           "label": "Instagram",
           "url": "https://www.instagram.com/nickballtraining/"
