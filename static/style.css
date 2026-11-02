@@ -56,13 +56,10 @@ h1, h2, h3 { font-family: var(--serif); line-height: 1.12; letter-spacing: -.01e
 }
 .btn:hover { transform: translateY(-1px); }
 
-.landing {
-  display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 20px;
-  min-height: calc(100vh - 60px); padding: 30px 0;
-}
-.landing h1 { font-size: clamp(44px, 6.4vw, 84px); font-weight: 800; margin: 14px 0 20px; }
-.landing .lede { margin: 0; }
-.legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 34px; align-items: center; }
+.landing { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 70px 0 30px; }
+.landing h1 { font-size: clamp(42px, 6.6vw, 88px); font-weight: 800; margin: 14px auto 18px; max-width: 13ch; }
+.landing .lede { margin: 0 auto; }
+.legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 8px; max-width: 720px; }
 .legend-label { width: 100%; font-size: 13px; color: var(--ink-2); margin-bottom: 2px; }
 .line-chip {
   font: 500 13px var(--sans); color: var(--ink); background: #fff;
@@ -74,7 +71,7 @@ h1, h2, h3 { font-family: var(--serif); line-height: 1.12; letter-spacing: -.01e
 .scroll-cue:hover { color: var(--ink); }
 
 .body3d {
-  position: relative; height: min(84vh, 820px); cursor: grab;
+  position: relative; width: min(100%, 620px); height: min(80vh, 780px); margin: 10px auto 0; cursor: grab;
   background: radial-gradient(closest-side at 50% 55%, #f1f3f5, rgba(255, 255, 255, 0) 78%);
 }
 .body3d:active { cursor: grabbing; }
@@ -198,20 +195,12 @@ h1, h2, h3 { font-family: var(--serif); line-height: 1.12; letter-spacing: -.01e
   main { padding: 0 16px; }
   .nav { padding: 12px 16px; }
   .nav nav a { margin-left: 14px; }
-  .landing { grid-template-columns: 1fr; min-height: 0; padding-top: 30px; gap: 0; }
-  .landing-copy { display: contents; }
-  .landing h1 { margin-bottom: 0; }
-  .body3d { height: 56vh; margin: 4px -16px 10px; }
-  .landing .eyebrow { order: 1; }
-  .landing h1 { order: 2; }
-  .body3d { order: 3; }
-  .landing .lede { order: 4; }
-  .legend { order: 5; margin-top: 24px; }
-  .scroll-cue { order: 6; justify-self: start; margin-top: 28px; }
+  .landing { padding-top: 40px; }
+  .body3d { height: 62vh; }
   .path-row { grid-template-columns: 1fr; }
   .story p { font-size: 18px; }
-  .nav { flex-wrap: wrap; gap: 6px; }
-  .nav nav a { margin-left: 0; margin-right: 14px; }
+  .nav { flex-direction: column; gap: 6px; }
+  .nav nav a { margin: 0 8px; }
   .grid { grid-template-columns: 1fr; }
   .lesson-list a { grid-template-columns: 36px 1fr; }
   .lesson-list .dur { display: none; }
@@ -228,3 +217,24 @@ h1, h2, h3 { font-family: var(--serif); line-height: 1.12; letter-spacing: -.01e
 .creator p { color: var(--ink-2); margin: 0 0 14px; font-size: 15px; }
 .creator a { margin-right: 14px; font-weight: 600; font-size: 14px; color: var(--graphite); text-decoration: none; }
 .creator a:hover { text-decoration: underline; }
+
+/* Centered layout: every page reads down the middle. */
+.story, .story h2, .module-hero, .overall, .card, .creators, .creator, .path,
+.lesson, .lesson .lede, .prose, .takeaways, .evidence, .sources, .video figcaption, .crumbs { text-align: center; }
+.module-hero, .lesson .lede, .narrow, .creators > p { margin-left: auto; margin-right: auto; }
+.module-hero .lede { margin: 0 auto; }
+.foot-row { justify-content: center; gap: 16px; }
+.card { align-items: center; }
+.story blockquote {
+  border-left: 0; padding: 26px 0; border-top: 1px solid var(--silver-light); border-bottom: 1px solid var(--silver-light);
+}
+.prose blockquote { border-left: 0; padding: 18px 0; border-top: 1px solid var(--silver-light); border-bottom: 1px solid var(--silver-light); }
+.prose ul, .prose ol, .takeaways ul { list-style-position: inside; padding-left: 0; }
+.prose th, .prose td { text-align: center; }
+.creator-row, .grid { justify-content: center; }
+.lesson-list { margin-left: auto; margin-right: auto; }
+.lesson-list a { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 6px; }
+.lesson-list .dur { display: block !important; }
+.done-btn { display: block; margin: 24px auto; }
+.pager a, .pager .next { text-align: center; }
+.takeaways { border-left: 1px solid var(--line); border-top: 3px solid var(--graphite); }

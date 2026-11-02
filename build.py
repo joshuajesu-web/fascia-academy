@@ -45,6 +45,7 @@ def load_modules():
 
 
 THREE = "https://cdn.jsdelivr.net/npm/three@0.160.0"
+SUBDIVIDE = "https://cdn.jsdelivr.net/npm/three-subdivide@1.1.5/build/index.module.js"
 
 
 def section_of(mod):
@@ -186,6 +187,7 @@ LINE_NAMES = [
     ("lateral", "Lateral Line"),
     ("spiral", "Spiral Line"),
     ("arm", "Arm Lines"),
+    ("nerves", "Nervous System"),
 ]
 
 
@@ -200,24 +202,22 @@ def render_home():
 </a>"""
         for s in SITE["sections"]
     )
-    head = f"""<script type="importmap">{{"imports":{{"three":"{THREE}/build/three.module.js","three/addons/":"{THREE}/examples/jsm/"}}}}</script>
+    head = f"""<script type="importmap">{{"imports":{{"three":"{THREE}/build/three.module.js","three/addons/":"{THREE}/examples/jsm/","three-subdivide":"{SUBDIVIDE}"}}}}</script>
 <script type="module" src="static/hero3d.js?v={asset_version('hero3d.js')}"></script>"""
     body = f"""
 <section class="landing">
-  <div class="landing-copy">
-    <p class="eyebrow">{esc(SITE['name'])} · A free course</p>
-    <h1>{esc(SITE['title'])}</h1>
-    <p class="lede">{esc(SITE['subtitle'])}</p>
-    <div class="legend" aria-label="Fascial lines shown on the figure">
-      <span class="legend-label">The fascial lines</span>
-      {legend}
-    </div>
-    <a class="scroll-cue" href="#story">Read the story ↓</a>
-  </div>
+  <p class="eyebrow">{esc(SITE['name'])} · A free course</p>
+  <h1>{esc(SITE['title'])}</h1>
+  <p class="lede">{esc(SITE['subtitle'])}</p>
   <div id="body3d" class="body3d" data-model="static/models/body.glb" role="img"
-       aria-label="A rotating 3D human figure with the main fascial lines traced over the body">
+       aria-label="A rotating, see-through 3D human figure showing the main fascial lines and the nervous system">
     <img class="poster" src="static/body-poster.png" alt="">
   </div>
+  <div class="legend" aria-label="Systems shown on the figure">
+    <span class="legend-label">Hover to trace a line through the body</span>
+    {legend}
+  </div>
+  <a class="scroll-cue" href="#story">Read the story ↓</a>
 </section>
 
 <article id="story" class="story">{story}</article>
