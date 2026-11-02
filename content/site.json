@@ -2,10 +2,7 @@
   "name": "Fascia Academy",
   "author": "Josh",
   "url": "https://fascia-academy.netlify.app",
-  "description": "A free course on fascia, elastic movement and the forgotten system behind every great athlete.",
-  "eyebrow": "A free course \u00b7 Pillar I: The Body",
-  "headline": "The secret your gym <em>never</em> taught you.",
-  "subhead": "Modern fitness trains muscles in isolation. The greatest athletes move as one connected, elastic system. Learn the history, the science of fascia, and simple at-home practices to move freely and stay resilient.",
+  "description": "A free course on fascia, the connective web behind every great athlete, and why the gym got training wrong.",
   "creators": [
     {
       "name": "The Secret of Athleticism",
@@ -40,6 +37,33 @@
           "url": "https://www.instagram.com/nickballtraining/"
         }
       ]
+    }
+  ],
+  "title": "The Hidden Secret of Human Athleticism",
+  "subtitle": "For a hundred years we've trained to look strong. Along the way, we forgot how to move.",
+  "sections": [
+    {
+      "slug": "theory",
+      "nav": "Fascia Theory",
+      "title": "Fascia Theory",
+      "tagline": "Where modern training went wrong, what fascia actually is, and the principles behind athletic movement.",
+      "modules": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "slug": "training",
+      "nav": "Fascia Training",
+      "title": "Fascia Training",
+      "tagline": "Simple at-home practices, the athletes to learn from, and how to build it all into your day.",
+      "modules": [
+        4,
+        5,
+        6
+      ],
+      "creators": true
     }
   ]
 }

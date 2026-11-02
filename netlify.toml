@@ -13,3 +13,9 @@
   for = "/static/*"
   [headers.values]
     Cache-Control = "public, max-age=604800"
+
+# The old About page moved to the homepage.
+[[redirects]]
+  from = "/about/*"
+  to = "/"
+  status = 301

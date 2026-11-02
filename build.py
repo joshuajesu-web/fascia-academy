@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Static site builder for the course.
 
-Reads content/site.json, content/about.md and content/modules/*.json,
-writes a fully static site to dist/. No server, no database, free to host.
+Reads content/site.json, content/home.md, content/about.md and
+content/modules/*.json, writes a fully static site to dist/.
+No server, no database, free to host.
 """
 import hashlib
 import html
@@ -43,10 +44,21 @@ def load_modules():
     return modules
 
 
-def page(title, body, *, description="", path="", depth=0, body_class=""):
+THREE = "https://cdn.jsdelivr.net/npm/three@0.160.0"
+
+
+def section_of(mod):
+    return next((s for s in SITE["sections"] if mod["module_number"] in s["modules"]), SITE["sections"][0])
+
+
+def page(title, body, *, description="", path="", depth=0, body_class="", active="", head=""):
     """Wrap a page body in the shared layout. depth = number of path segments, for relative links."""
     base = "../" * depth
-    full_title = f"{title} · {SITE['name']}" if title != SITE["name"] else SITE["name"]
+    full_title = f"{title} · {SITE['name']}" if title != SITE["name"] else f"{SITE['name']} · {SITE['title']}"
+    links = [("about", "About", "index.html")] + [(s["slug"], s["nav"], f"{s['slug']}/index.html") for s in SITE["sections"]]
+    nav = "".join(
+        f'<a href="{base}{href}"{" aria-current=\"page\"" if key == active else ""}>{esc(label)}</a>' for key, label, href in links
+    )
     desc = esc(description or SITE["description"])
     url = SITE["url"].rstrip("/") + "/" + path
     og_image = SITE["url"].rstrip("/") + "/static/og.png"
@@ -69,14 +81,12 @@ def page(title, body, *, description="", path="", depth=0, body_class=""):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{base}static/style.css?v={asset_version('style.css')}">
+{head}
 </head>
 <body class="{body_class}">
 <header class="nav">
   <a class="brand" href="{base}index.html"><span class="mark" aria-hidden="true"></span>{esc(SITE['name'])}</a>
-  <nav>
-    <a href="{base}index.html#modules">Course</a>
-    <a href="{base}about/index.html">Josh's story</a>
-  </nav>
+  <nav>{nav}</nav>
 </header>
 <main>
 {body}
@@ -124,6 +134,7 @@ def render_lesson(mod, lesson, prev_l, next_l, idx):
         for s in lesson.get("sources", [])
     )
     key = f"{mod['slug']}/{lesson['slug']}"
+    sec = section_of(mod)
 
     def nav_link(target, label, cls):
         if not target:
@@ -133,7 +144,7 @@ def render_lesson(mod, lesson, prev_l, next_l, idx):
 
     body = f"""
 <article class="lesson" data-lesson="{esc(key)}">
-  <div class="crumbs"><a href="../../../index.html#modules">Course</a> / <a href="../index.html">Module {mod['module_number']}: {esc(mod['title'])}</a></div>
+  <div class="crumbs"><a href="../../../{sec['slug']}/index.html">{esc(sec['title'])}</a> / <a href="../index.html">Module {mod['module_number']}: {esc(mod['title'])}</a></div>
   <h1>{esc(lesson['title'])}</h1>
   <p class="meta">Lesson {idx + 1} · {int(lesson.get('duration_min', 10))} min</p>
   <p class="lede">{esc(lesson.get('summary', ''))}</p>
@@ -145,10 +156,11 @@ def render_lesson(mod, lesson, prev_l, next_l, idx):
   {f'<details class="sources"><summary>Sources &amp; further reading</summary><ul>{sources}</ul></details>' if sources else ''}
   <nav class="pager">{nav_link(prev_l, '← Previous', 'prev')}{nav_link(next_l, 'Next →', 'next')}</nav>
 </article>"""
-    return page(lesson["title"], body, description=lesson.get("summary", ""), path=lesson_url(mod, lesson), depth=3)
+    return page(lesson["title"], body, description=lesson.get("summary", ""), path=lesson_url(mod, lesson), depth=3, active=sec["slug"])
 
 
 def render_module(mod):
+    sec = section_of(mod)
     items = "".join(
         f"""<li><a href="{esc(l['slug'])}/index.html" data-key="{esc(mod['slug'])}/{esc(l['slug'])}">
   <span class="num">{i + 1:02d}</span>
@@ -158,57 +170,92 @@ def render_module(mod):
     )
     body = f"""
 <section class="module-hero">
-  <div class="crumbs"><a href="../../index.html#modules">Course</a></div>
+  <div class="crumbs"><a href="../../{sec['slug']}/index.html">{esc(sec['title'])}</a></div>
   <p class="eyebrow">Module {mod['module_number']}</p>
   <h1>{esc(mod['title'])}</h1>
   <p class="lede">{esc(mod['tagline'])}</p>
 </section>
 <div class="prose narrow">{md(mod['intro_markdown'])}</div>
 <ol class="lesson-list">{items}</ol>"""
-    return page(mod["title"], body, description=mod["tagline"], path=f"course/{mod['slug']}/index.html", depth=2)
+    return page(mod["title"], body, description=mod["tagline"], path=f"course/{mod['slug']}/index.html", depth=2, active=sec["slug"])
 
 
-def render_index(modules):
-    total = sum(len(m["lessons"]) for m in modules)
+LINE_NAMES = [
+    ("back", "Superficial Back Line"),
+    ("front", "Superficial Front Line"),
+    ("lateral", "Lateral Line"),
+    ("spiral", "Spiral Line"),
+    ("arm", "Arm Lines"),
+]
+
+
+def render_home():
+    story = md((CONTENT / "home.md").read_text())
+    legend = "".join(f'<button type="button" class="line-chip" data-line="{k}">{esc(label)}</button>' for k, label in LINE_NAMES)
+    paths = "".join(
+        f"""<a class="path" href="{esc(s['slug'])}/index.html">
+  <span class="eyebrow">{esc(s['nav'])}</span>
+  <h3>{esc(s['title'])} →</h3>
+  <p>{esc(s['tagline'])}</p>
+</a>"""
+        for s in SITE["sections"]
+    )
+    head = f"""<script type="importmap">{{"imports":{{"three":"{THREE}/build/three.module.js","three/addons/":"{THREE}/examples/jsm/"}}}}</script>
+<script type="module" src="static/hero3d.js?v={asset_version('hero3d.js')}"></script>"""
+    body = f"""
+<section class="landing">
+  <div class="landing-copy">
+    <p class="eyebrow">{esc(SITE['name'])} · A free course</p>
+    <h1>{esc(SITE['title'])}</h1>
+    <p class="lede">{esc(SITE['subtitle'])}</p>
+    <div class="legend" aria-label="Fascial lines shown on the figure">
+      <span class="legend-label">The fascial lines</span>
+      {legend}
+    </div>
+    <a class="scroll-cue" href="#story">Read the story ↓</a>
+  </div>
+  <div id="body3d" class="body3d" data-model="static/models/body.glb" role="img"
+       aria-label="A rotating 3D human figure with the main fascial lines traced over the body">
+    <img class="poster" src="static/body-poster.png" alt="">
+  </div>
+</section>
+
+<article id="story" class="story">{story}</article>
+
+<section class="paths">
+  <h2>Train the connections</h2>
+  <p class="lede">The course is free. Pick a path.</p>
+  <div class="path-row">{paths}</div>
+</section>
+"""
+    return page(SITE["name"], body, path="index.html", depth=0, body_class="home", active="about", head=head)
+
+
+def render_section(sec, modules):
+    mods = [m for m in modules if m["module_number"] in sec["modules"]]
+    total = sum(len(m["lessons"]) for m in mods)
     cards = "".join(
-        f"""<a class="card" href="course/{esc(m['slug'])}/index.html" data-module="{esc(m['slug'])}" data-count="{len(m['lessons'])}">
+        f"""<a class="card" href="../course/{esc(m['slug'])}/index.html" data-module="{esc(m['slug'])}" data-count="{len(m['lessons'])}">
   <span class="eyebrow">Module {m['module_number']}</span>
   <h3>{esc(m['title'])}</h3>
   <p>{esc(m['tagline'])}</p>
   <span class="foot-row"><span>{len(m['lessons'])} lessons</span><span class="progress"><i></i></span></span>
 </a>"""
-        for m in modules
+        for m in mods
     )
-    first = modules[0] if modules else None
-    start_href = f"course/{first['slug']}/index.html" if first else "#modules"
     body = f"""
-<section class="hero">
-  <div class="lines" aria-hidden="true">{hero_lines_svg()}</div>
-  <p class="eyebrow">{esc(SITE['eyebrow'])}</p>
-  <h1>{SITE['headline']}</h1>
-  <p class="lede">{esc(SITE['subhead'])}</p>
-  <div class="cta-row">
-    <a class="btn" href="{start_href}">Start the course, it's free</a>
-    <a class="btn ghost" href="about/index.html">Why I built this</a>
-  </div>
-  <p class="stats"><span>{len(modules)} module{"s" if len(modules) != 1 else ""}</span><span>{total} lessons</span><span>No sign-up</span><span>At home, no equipment</span></p>
+<section class="module-hero">
+  <p class="eyebrow">{esc(SITE['name'])}</p>
+  <h1>{esc(sec['title'])}</h1>
+  <p class="lede">{esc(sec['tagline'])}</p>
 </section>
-
-<section class="pillars">
-  <div><span class="eyebrow">Pillar I</span><h3>Body</h3><p>Fascia, elasticity and the lines that connect you from foot to fingertip. <em>This course.</em></p></div>
-  <div class="soon"><span class="eyebrow">Pillar II</span><h3>Mind</h3><p>Coming later.</p></div>
-  <div class="soon"><span class="eyebrow">Pillar III</span><h3>Soul</h3><p>Coming later.</p></div>
-</section>
-
-<section id="modules" class="modules">
-  <h2>The course</h2>
+<section class="modules">
   <p class="overall">Your progress: <span id="overall">0</span> of {total} lessons</p>
-  <div class="grid">{cards or '<p class="overall">The first modules are being written right now. Check back very soon.</p>'}</div>
+  <div class="grid">{cards or '<p class="overall">These modules are being written right now. Check back soon.</p>'}</div>
 </section>
-
-{render_creators()}
+{render_creators() if sec.get("creators") else ""}
 """
-    return page(SITE["name"], body, path="index.html", depth=0, body_class="home")
+    return page(sec["title"], body, description=sec["tagline"], path=f"{sec['slug']}/index.html", depth=1, active=sec["slug"])
 
 
 def render_creators():
@@ -231,21 +278,10 @@ def render_creators():
 </section>"""
 
 
-def render_about():
+def render_story():
     text = (CONTENT / "about.md").read_text()
     body = f'<article class="lesson about"><div class="prose">{md(text)}</div></article>'
-    return page("Josh's story", body, description="Why I built a free course on fascia.", path="about/index.html", depth=1)
-
-
-def hero_lines_svg():
-    # Long flowing curves, a nod to myofascial lines running through the body.
-    paths = []
-    for i in range(9):
-        y = 40 + i * 38
-        paths.append(
-            f'<path d="M-50 {y} C 250 {y - 120 + i * 9}, 520 {y + 160 - i * 14}, 1250 {y - 40 + i * 6}" />'
-        )
-    return f'<svg viewBox="0 0 1200 400" preserveAspectRatio="none">{"".join(paths)}</svg>'
+    return page("Josh's story", body, description="Why I built a free course on fascia.", path="story/index.html", depth=1, active="about")
 
 
 def write(rel, content):
@@ -268,9 +304,11 @@ def main():
         write(lesson_url(m, l), render_lesson(m, l, prev_l, next_l, idx))
     for m in modules:
         write(f"course/{m['slug']}/index.html", render_module(m))
-    write("index.html", render_index(modules))
-    write("about/index.html", render_about())
-    write("404.html", page("Not found", '<section class="module-hero"><h1>Lost the line.</h1><p class="lede"><a href="/">Back to the course</a></p></section>'))
+    for sec in SITE["sections"]:
+        write(f"{sec['slug']}/index.html", render_section(sec, modules))
+    write("index.html", render_home())
+    write("story/index.html", render_story())
+    write("404.html", page("Not found", '<section class="module-hero"><h1>Lost the line.</h1><p class="lede"><a href="/">Back to the start</a></p></section>'))
     print(f"Built {len(modules)} modules, {len(flat)} lessons -> {DIST}")
 
 
